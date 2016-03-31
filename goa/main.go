@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -27,13 +28,15 @@ func main() {
 	}
 	packagePath := strings.TrimSpace(string(packagePathBytes))
 
-	err = os.MkdirAll(".go-anywhere/src/"+filepath.Dir(packagePath), 0744|os.ModeDir)
-	if err != nil {
-		panic(err) //TODO: handle
-	}
-	err = os.Link(pwd, ".go-anywhere/src/"+packagePath)
-	if err != nil {
-		panic(err) //TODO: handle
+	if _, err := os.Stat(".go-anywhere"); err == os.ErrNotExist {
+		err = os.MkdirAll(".go-anywhere/src/"+filepath.Dir(packagePath), 0744|os.ModeDir)
+		if err != nil {
+			panic(err) //TODO: handle
+		}
+		err = os.Symlink(pwd, pwd+"/.go-anywhere/src/"+packagePath)
+		if err != nil {
+			panic(err) //TODO: handle
+		}
 	}
 
 	err = os.Setenv("GOPATH", pwd+"/.go-anywhere")
@@ -41,9 +44,13 @@ func main() {
 		panic(err) //TODO: handle
 	}
 
-	cmd := exec.Command(os.Args[0], os.Args[1:]...)
-	err = cmd.Run()
+	cmd := exec.Command("go", os.Args[1:]...)
+	err = cmd.Wait()
+	data, err := cmd.CombinedOutput()
+	fmt.Print(string(data))
+	fmt.Print(err)
 	if err != nil {
 		panic(err) //TODO: handle
 	}
+
 }
