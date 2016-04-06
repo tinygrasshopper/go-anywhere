@@ -1,4 +1,4 @@
-package system_tests
+package integration_tests
 
 import (
 	"os"
@@ -24,9 +24,12 @@ var _ = Describe("Goa", func() {
 			Eventually(session).Should(gexec.Exit(0))
 			GinkgoWriter.Write(session.Out.Contents())
 		})
+
 		It("creates a gopath directory structure in .go-anywhere/", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "src")).To(BeADirectory())
+		})
+		XIt("make pkg and binm directories", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "pkg")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "bin")).To(BeADirectory())
 		})

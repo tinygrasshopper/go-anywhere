@@ -28,8 +28,8 @@ func main() {
 	}
 	packagePath := strings.TrimSpace(string(packagePathBytes))
 
-	if _, err := os.Stat(".go-anywhere"); err == os.ErrNotExist {
-		err = os.MkdirAll(".go-anywhere/src/"+filepath.Dir(packagePath), 0744|os.ModeDir)
+	if _, err = os.Stat(".go-anywhere"); os.IsNotExist(err) {
+		err := os.MkdirAll(".go-anywhere/src/"+filepath.Dir(packagePath), 0744|os.ModeDir)
 		if err != nil {
 			panic(err) //TODO: handle
 		}
