@@ -6,5 +6,6 @@ go:
 install:
   - go get github.com/onsi/ginkgo
   - go install github.com/onsi/ginkgo/ginkgo
+  - go get github.com/onsi/gomega
 
-script: $HOME/gopath/bin/ginkgo -r --randomizeAllSpecs --failOnPending --randomizeSuites --race
+script: $HOME/gopath/bin/ginkgo -r --randomizeAllSpecs --randomizeSuites --race
