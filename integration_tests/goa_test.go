@@ -29,7 +29,7 @@ var _ = Describe("Goa", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "src")).To(BeADirectory())
 		})
-		XIt("make pkg and binm directories", func() {
+		XIt("make pkg and bin directories", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "pkg")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "bin")).To(BeADirectory())
 		})
@@ -38,15 +38,26 @@ var _ = Describe("Goa", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "src", "github.com/tinygrasshopper")).To(BeADirectory())
 		})
 		It("symlinks the current directory to the path specified by package.path", func() {
+			linkPath, err := os.Readlink(filepath.Join(testDirectory, ".go-anywhere", "src", "github.com/tinygrasshopper/x"))
+			Expect(err).NotTo(HaveOccurred())
+			Expect(linkPath).To(HaveSuffix(testDirectory))
+
 		})
 
 		It("sets the GOPATH to .go-anywhere/", func() {})
 	})
 })
 
+func absPath(path string) string {
+	stat, err := filepath.Abs(path)
+	Expect(err).NotTo(HaveOccurred())
+	return stat
+}
+
 func createPackageFile(contents string) {
 	file, err := os.OpenFile(filepath.Join(testDirectory, "package.path"), os.O_RDWR|os.O_CREATE, 0744)
 	Expect(err).NotTo(HaveOccurred())
 	file.Write([]byte(contents))
 	Expect(file.Close()).To(Succeed())
+	testFiles = append(testFiles, file.Name())
 }

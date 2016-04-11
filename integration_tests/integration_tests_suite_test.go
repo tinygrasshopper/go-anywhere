@@ -19,6 +19,7 @@ func TestSystemTests(t *testing.T) {
 var testDirectory string
 
 var _ = BeforeEach(func() {
+	testFiles = []string{}
 	var err error
 	testDirectory, err = ioutil.TempDir("", "go-anywhere")
 	Expect(err).NotTo(HaveOccurred())
@@ -28,10 +29,15 @@ var _ = AfterEach(func() {
 })
 
 var pathToGoaCli string
+var pathToMockGoExecutable string
+var testFiles []string
 
 var _ = BeforeSuite(func() {
 	var err error
 	pathToGoaCli, err = gexec.Build("github.com/tinygrasshopper/go-anywhere/goa")
+	Expect(err).ShouldNot(HaveOccurred())
+
+	pathToMockGoExecutable, err = gexec.Build("github.com/tinygrasshopper/go-anywhere/integration_tests/mock_executable")
 	Expect(err).ShouldNot(HaveOccurred())
 })
 
