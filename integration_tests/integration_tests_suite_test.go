@@ -3,6 +3,7 @@ package integration_tests
 import (
 	"io/ioutil"
 	"os"
+	"path/filepath"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -39,6 +40,11 @@ var _ = BeforeSuite(func() {
 
 	pathToMockGoExecutable, err = gexec.Build("github.com/tinygrasshopper/go-anywhere/integration_tests/mock_executable")
 	Expect(err).ShouldNot(HaveOccurred())
+	newPathToMockGoExecutable := filepath.Join(filepath.Dir(pathToMockGoExecutable), "go")
+	Expect(os.Rename(pathToMockGoExecutable, newPathToMockGoExecutable)).To(Succeed())
+	pathToMockGoExecutable = newPathToMockGoExecutable
+
+	os.Setenv("PATH", filepath.Dir(pathToMockGoExecutable)+":"+os.Getenv("PATH"))
 })
 
 var _ = AfterSuite(func() {

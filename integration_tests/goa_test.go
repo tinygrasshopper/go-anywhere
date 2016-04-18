@@ -11,6 +11,12 @@ import (
 )
 
 var _ = Describe("Goa", func() {
+	BeforeEach(func() {
+		setupEnviroment()
+	})
+	AfterEach(func() {
+		teardownEnvironment()
+	})
 	Context("package.path file present", func() {
 		var session *gexec.Session
 		BeforeEach(func() {
@@ -29,7 +35,7 @@ var _ = Describe("Goa", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "src")).To(BeADirectory())
 		})
-		XIt("make pkg and bin directories", func() {
+		It("make pkg and bin directories", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "pkg")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "bin")).To(BeADirectory())
 		})
@@ -41,10 +47,11 @@ var _ = Describe("Goa", func() {
 			linkPath, err := os.Readlink(filepath.Join(testDirectory, ".go-anywhere", "src", "github.com/tinygrasshopper/x"))
 			Expect(err).NotTo(HaveOccurred())
 			Expect(linkPath).To(HaveSuffix(testDirectory))
-
 		})
 
-		It("sets the GOPATH to .go-anywhere/", func() {})
+		It("sets the GOPATH to .go-anywhere/", func() {
+			Expect(mockExecutableHadEnvironment("GOPATH")).To(HaveSuffix(filepath.Join(testDirectory, ".go-anywhere")))
+		})
 	})
 })
 

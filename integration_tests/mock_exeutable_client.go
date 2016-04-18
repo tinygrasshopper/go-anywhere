@@ -1,9 +1,11 @@
 package integration_tests
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 
 	. "github.com/onsi/gomega"
 )
@@ -11,6 +13,20 @@ import (
 func mockExecutableReturns(exitCode int, contents string) {
 	os.Setenv("RETURN_VALUE", contents)
 	os.Setenv("RETURN_EXIT_CODE", strconv.Itoa(exitCode))
+}
+func mockExecutableHadEnvironment(key string) string {
+	file, err := os.Open(os.Getenv("TEST_ENV_PASSED"))
+	Expect(err).NotTo(HaveOccurred())
+	decoder := json.NewDecoder(file)
+	var env []string
+	decoder.Decode(&env)
+
+	for _, v := range env {
+		if strings.HasPrefix(v, key+"=") {
+			return strings.Split(v, "=")[1]
+		}
+	}
+	return ""
 }
 func setupEnviroment() {
 	os.Setenv("TEST_ARGUMENTS_PASSED", tempFile())
