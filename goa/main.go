@@ -1,12 +1,13 @@
 package main
 
 import (
-	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 func main() {
@@ -55,12 +56,29 @@ func main() {
 	}
 
 	cmd := exec.Command("go", os.Args[1:]...)
-	err = cmd.Wait()
-	data, err := cmd.CombinedOutput()
-	fmt.Print(string(data))
-	fmt.Print(err)
+	err = cmd.Start()
 	if err != nil {
 		panic(err) //TODO: handle
+	}
+
+	go io.Copy(cmd.Stdout, os.Stdout)
+	go io.Copy(cmd.Stderr, os.Stderr)
+
+	err = cmd.Wait()
+	if err := cmd.Wait(); err != nil {
+		if exiterr, ok := err.(*exec.ExitError); ok {
+			// The program has exited with an exit code != 0
+
+			// This works on both Unix and Windows. Although package
+			// syscall is generally platform dependent, WaitStatus is
+			// defined for both Unix and Windows and in both cases has
+			// an ExitStatus() method with the same signature.
+			if status, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+				os.Exit(status.ExitStatus())
+			}
+		} else {
+			panic(err)
+		}
 	}
 
 }

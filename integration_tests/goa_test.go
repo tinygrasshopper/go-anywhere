@@ -27,7 +27,7 @@ var _ = Describe("Goa", func() {
 			var err error
 			session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ShouldNot(HaveOccurred())
-			Eventually(session).Should(gexec.Exit(0))
+			<-session.Exited
 			GinkgoWriter.Write(session.Out.Contents())
 		})
 
@@ -35,6 +35,7 @@ var _ = Describe("Goa", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "src")).To(BeADirectory())
 		})
+
 		It("make pkg and bin directories", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "pkg")).To(BeADirectory())
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "bin")).To(BeADirectory())
@@ -43,6 +44,7 @@ var _ = Describe("Goa", func() {
 		It("creates the path specified in package.path in .go-anywhere/", func() {
 			Expect(filepath.Join(testDirectory, ".go-anywhere", "src", "github.com/tinygrasshopper")).To(BeADirectory())
 		})
+
 		It("symlinks the current directory to the path specified by package.path", func() {
 			linkPath, err := os.Readlink(filepath.Join(testDirectory, ".go-anywhere", "src", "github.com/tinygrasshopper/x"))
 			Expect(err).NotTo(HaveOccurred())
@@ -51,6 +53,20 @@ var _ = Describe("Goa", func() {
 
 		It("sets the GOPATH to .go-anywhere/", func() {
 			Expect(mockExecutableHadEnvironment("GOPATH")).To(HaveSuffix(filepath.Join(testDirectory, ".go-anywhere")))
+		})
+
+		It("succeeded", func() {
+			Eventually(session).Should(gexec.Exit(0))
+		})
+
+		Context("on a non zero exit code", func() {
+			BeforeEach(func() {
+				mockExecutableReturnsExitCode(5)
+			})
+
+			It("passes through the exit code", func() {
+				Expect(session.ExitCode()).To(Equal(5))
+			})
 		})
 	})
 })

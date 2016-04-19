@@ -10,8 +10,10 @@ import (
 
 func main() {
 	fmt.Printf(os.Getenv("RETURN_VALUE"))
+	fmt.Errorf(os.Getenv("RETURN_ERROR_VALUE"))
 
 	exitCode, _ := strconv.Atoi(os.Getenv("RETURN_EXIT_CODE"))
+	fmt.Printf("RETURN_EXIT_CODE %d", exitCode)
 
 	data, _ := json.Marshal(os.Args)
 	ioutil.WriteFile(os.Getenv("TEST_ARGUMENTS_PASSED"), data, 0666)

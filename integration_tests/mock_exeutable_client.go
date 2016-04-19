@@ -10,10 +10,18 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func mockExecutableReturns(exitCode int, contents string) {
-	os.Setenv("RETURN_VALUE", contents)
-	os.Setenv("RETURN_EXIT_CODE", strconv.Itoa(exitCode))
+func mockExecutableReturnsExitCode(exitCode int) {
+	os.Setenv("RETURN_ERROR_VALUE", strconv.Itoa(exitCode))
 }
+
+func mockExecutableReturnsExitOutput(contents string) {
+	os.Setenv("RETURN_VALUE", contents)
+}
+
+func mockExecutableReturnsExitErroOutput(contents string) {
+	os.Setenv("RETURN_EXIT_CODE", contents)
+}
+
 func mockExecutableHadEnvironment(key string) string {
 	file, err := os.Open(os.Getenv("TEST_ENV_PASSED"))
 	Expect(err).NotTo(HaveOccurred())
