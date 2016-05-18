@@ -27,6 +27,7 @@ func main() {
 		panic(err) //TODO: handle
 	}
 	packagePath := strings.TrimSpace(string(packagePathBytes))
+	linkedPath := pwd + "/.go-anywhere/src/" + packagePath
 
 	if _, err = os.Stat(".go-anywhere"); os.IsNotExist(err) {
 		err = os.MkdirAll(".go-anywhere/pkg/", 0744|os.ModeDir)
@@ -43,7 +44,7 @@ func main() {
 		if err != nil {
 			panic(err) //TODO: handle
 		}
-		err = os.Symlink(pwd, pwd+"/.go-anywhere/src/"+packagePath)
+		err = os.Symlink(pwd, linkedPath)
 		if err != nil {
 			panic(err) //TODO: handle
 		}
@@ -54,7 +55,29 @@ func main() {
 		panic(err) //TODO: handle
 	}
 
-	cmd := exec.Command("go", os.Args[1:]...)
+	fullName, err := exec.LookPath(os.Args[1])
+	if err != nil {
+		panic(err) //TODO: handle
+	}
+
+	runnerScript, err := ioutil.TempFile("", "go-anywhere-runner")
+	if err != nil {
+		panic(err) //TODO: handle
+	}
+
+	defer os.Remove(runnerScript.Name())
+	runnerScript.Write([]byte(fmt.Sprintf(`cd %s
+%s "$@"`, linkedPath, fullName)))
+	runnerScript.Close()
+
+	os.Chdir(linkedPath)
+	fmt.Printf("Switched to %s\n", linkedPath)
+	wd, err := os.Getwd()
+	fmt.Printf("WD %v %v \n", wd, err)
+	fmt.Printf("Running %v %v\n", os.Args[1], os.Args[2:])
+
+	cmd := exec.Command(runnerScript.Name(), os.Args[2:]...)
+
 	err = cmd.Wait()
 	data, err := cmd.CombinedOutput()
 	fmt.Print(string(data))
