@@ -65,18 +65,16 @@ func main() {
 		panic(err) //TODO: handle
 	}
 
-	defer os.Remove(runnerScript.Name())
-	runnerScript.Write([]byte(fmt.Sprintf(`cd %s
-%s "$@"`, linkedPath, fullName)))
-	runnerScript.Close()
+	runnerScript.WriteString(`cd ` + linkedPath + "\n")
+	runnerScript.WriteString(fullName + " " + strings.Join(os.Args[2:], " "))
 
-	os.Chdir(linkedPath)
-	fmt.Printf("Switched to %s\n", linkedPath)
-	wd, err := os.Getwd()
-	fmt.Printf("WD %v %v \n", wd, err)
-	fmt.Printf("Running %v %v\n", os.Args[1], os.Args[2:])
+	// TODO: Redcue permissions
+	err = runnerScript.Chmod(0700)
+	if err != nil {
+		panic(err) //TODO: handle
+	}
 
-	cmd := exec.Command(runnerScript.Name(), os.Args[2:]...)
+	cmd := exec.Command("/bin/sh", runnerScript.Name())
 
 	err = cmd.Wait()
 	data, err := cmd.CombinedOutput()
