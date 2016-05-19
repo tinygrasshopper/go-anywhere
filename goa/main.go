@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -75,13 +74,12 @@ func main() {
 	}
 
 	cmd := exec.Command("/bin/sh", runnerScript.Name())
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	cmd.Stdin = os.Stdin
 
-	err = cmd.Wait()
-	data, err := cmd.CombinedOutput()
-	fmt.Print(string(data))
-	fmt.Print(err)
+	err = cmd.Run()
 	if err != nil {
 		panic(err) //TODO: handle
 	}
-
 }
