@@ -23,7 +23,7 @@ var _ = Describe("Goa", func() {
 			createPackageFile("github.com/tinygrasshopper/x")
 
 			Expect(os.Chdir(testDirectory)).To(Succeed())
-			command := exec.Command(pathToGoaCli, "help")
+			command := exec.Command(pathToGoaCli, "go", "help")
 			var err error
 			session, err = gexec.Start(command, GinkgoWriter, GinkgoWriter)
 			Expect(err).ShouldNot(HaveOccurred())
