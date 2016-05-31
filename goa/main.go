@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -15,19 +16,26 @@ func main() {
 
 	packagePath := packagePath()
 	linkedPath := pwd + "/.go-anywhere/src/" + packagePath
+	command := os.Args[1]
+
+	//TODO: remove script
+	var runner *os.File
+
+	switch command {
+	case "exec":
+		runner = runnerScript(linkedPath, os.Args[2], os.Args[3:]...)
+	case "build", "clean", "doc", "env", "fix", "fmt", "generate", "get", "install", "list", "run", "test", "tool", "version", "vet":
+		//TODO: remove get from this list
+		runner = runnerScript(linkedPath, "go", os.Args[1:]...)
+	default:
+		panic(fmt.Sprintf("unknown command %s", command))
+	}
 
 	ensurePath(pwd, packagePath, linkedPath)
 
 	setGoPath(pwd)
 
-	fullName, err := exec.LookPath(os.Args[1])
-	if err != nil {
-		panic(err) //TODO: handle
-	}
-
-	runnerScript := runnerScript(linkedPath, fullName, os.Args[2:]...)
-
-	cmd := exec.Command("/bin/sh", runnerScript.Name())
+	cmd := exec.Command("/bin/sh", runner.Name())
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	cmd.Stdin = os.Stdin
@@ -90,7 +98,12 @@ func setGoPath(pwd string) {
 	}
 }
 
-func runnerScript(linkedPath, fullName string, args ...string) *os.File {
+func runnerScript(linkedPath, executable string, args ...string) *os.File {
+	fullName, err := exec.LookPath(executable)
+	if err != nil {
+		panic(err) //TODO: handle
+	}
+
 	runnerScript, err := ioutil.TempFile("", "go-anywhere-runner")
 	if err != nil {
 		panic(err) //TODO: handle
