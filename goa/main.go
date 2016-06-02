@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"os/exec"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -32,8 +33,8 @@ func main() {
 	}
 
 	ensurePath(pwd, packagePath, linkedPath)
-
 	setGoPath(pwd)
+	prependGoaToPath(os.Args[0])
 
 	cmd := exec.Command("/bin/sh", runner.Name())
 	cmd.Stdout = os.Stdout
@@ -118,4 +119,25 @@ func runnerScript(linkedPath, executable string, args ...string) *os.File {
 		panic(err) //TODO: handle
 	}
 	return runnerScript
+}
+
+func prependGoaToPath(goa string) {
+	dir, err := ioutil.TempDir("", "go-path")
+	if err != nil {
+		panic(err) //TODO: handle
+	}
+
+	fullName, err := exec.LookPath(goa)
+	if err != nil {
+		panic(err) //TODO: handle
+	}
+
+	err = os.Symlink(fullName, path.Join(dir, "go"))
+	if err != nil {
+		panic(err) //TODO: handle
+	}
+
+	path := os.Getenv("PATH")
+	fmt.Printf("dir: %s\n", dir)
+	os.Setenv("PATH", dir+":"+path)
 }
